@@ -170,11 +170,96 @@ Return a JSON object with a single key "topics" containing an array of exactly 5
   }
 }
 
-// ─── Character-Aware Script Generation ────────────────────────────
-// Takes a character profile + content brief and generates 3 script variants.
+// ─── Character-Aware Script Generation (HYBRID ARCHITECTURE) ──────
+// Uses the LOCAL fine-tuned Mistral-7B LoRA model via FastAPI server
+// for script generation, saving Mistral Cloud API costs.
+// Falls back to Mistral Cloud API if local server is unavailable.
 // Each script is structured: hook (0-2s) / body (2-18s) / CTA (18-22s).
 
+const LOCAL_MODEL_URL = process.env.LOCAL_MODEL_URL || "http://localhost:8000";
+
 export async function generateCreativeScripts(
+  profile: CharacterProfile,
+  brief: ContentBrief
+): Promise<ScriptDraft[]> {
+  // Try the local fine-tuned model first (Hybrid Architecture)
+  try {
+    const localScripts = await generateScriptsLocal(profile, brief);
+    if (localScripts.length > 0) {
+      console.log("[llm] Scripts generated via LOCAL fine-tuned model");
+      return localScripts;
+    }
+  } catch (localErr) {
+    console.warn(
+      "[llm] Local model unavailable, falling back to Mistral Cloud API:",
+      localErr instanceof Error ? localErr.message : localErr
+    );
+  }
+
+  // Fallback: use Mistral Cloud API (original behavior)
+  return generateScriptsCloud(profile, brief);
+}
+
+/** Call our local FastAPI server hosting the fine-tuned LoRA adapter. */
+async function generateScriptsLocal(
+  profile: CharacterProfile,
+  brief: ContentBrief
+): Promise<ScriptDraft[]> {
+  // Quick health check -- fail fast if server is down
+  const healthRes = await fetch(`${LOCAL_MODEL_URL}/health`, {
+    signal: AbortSignal.timeout(3000),
+  });
+  if (!healthRes.ok) throw new Error("Local model server health check failed");
+
+  const payload = {
+    profile: {
+      niche: profile.niche,
+      vibe: profile.vibe,
+      role: profile.role,
+      language: profile.language,
+      aggressiveness: profile.aggressiveness,
+      styleGuide: profile.styleGuide || "Engaging, authentic, scroll-stopping",
+    },
+    brief: {
+      topic: brief.topic,
+      objective: brief.objective || "",
+    },
+  };
+
+  const res = await fetch(`${LOCAL_MODEL_URL}/generate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(120000), // 2 min timeout for GPU generation
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "unknown error");
+    throw new Error(`Local model returned ${res.status}: ${errText}`);
+  }
+
+  const data = await res.json();
+  const content = data.content;
+
+  if (typeof content !== "string" || !content) {
+    throw new Error("Empty content from local model");
+  }
+
+  const parsed = JSON.parse(content);
+  const rawScripts = parsed.scripts || parsed.Scripts || [];
+
+  return rawScripts.slice(0, 3).map((s: any, i: number): ScriptDraft => ({
+    id: `script-${Date.now()}-${i}`,
+    title: String(s.title || `Variant ${i + 1}`).slice(0, 60),
+    hook: String(s.hook || ""),
+    body: String(s.body || ""),
+    cta: String(s.cta || ""),
+    durationTargetSec: 22,
+  }));
+}
+
+/** Fallback: use Mistral Cloud API (original implementation, unchanged). */
+async function generateScriptsCloud(
   profile: CharacterProfile,
   brief: ContentBrief
 ): Promise<ScriptDraft[]> {
@@ -237,7 +322,7 @@ ${profile.aggressiveness === "spicy"
 
     const content = completion.choices?.[0]?.message?.content;
     if (typeof content !== "string" || !content) {
-      console.error("[llm] Empty response from Mistral for scripts");
+      console.error("[llm] Empty response from Mistral Cloud for scripts");
       return [];
     }
 
@@ -253,7 +338,7 @@ ${profile.aggressiveness === "spicy"
       durationTargetSec: 22,
     }));
   } catch (err) {
-    console.error("[llm] generateCreativeScripts failed:", err instanceof Error ? err.message : err);
+    console.error("[llm] generateCreativeScripts (cloud fallback) failed:", err instanceof Error ? err.message : err);
     return [];
   }
 }
