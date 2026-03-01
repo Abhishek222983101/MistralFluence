@@ -1,0 +1,21 @@
+{
+  "projectName": "Moltfluence BNB",
+  "network": "BSC Mainnet",
+  "contracts": [
+    {
+      "name": "USDT (Binance-Peg)",
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "explorerLink": "https://bscscan.com/address/0x55d398326f99059fF775485246999027B3197955",
+      "description": "BSC USDT (18 decimals) — payment asset for x402 micropayments via Permit2"
+    },
+    {
+      "name": "Permit2 (Canonical)",
+      "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+      "explorerLink": "https://bscscan.com/address/0x000000000022D473030F116dDEE9F6B43aC78BA3",
+      "description": "Uniswap Permit2 — universal ERC-20 approval used by x402 for gasless payment signatures"
+    }
+  ],
+  "frontendUrl": "https://monadfluence-bnb.vercel.app",
+  "backendApi": "https://monadfluence-bnb.vercel.app/api",
+  "notes": "No custom contracts deployed. Uses native BSC USDT + canonical Permit2 for x402 agent payments. Self-hosted x402 facilitator at /api/facilitator. All paid endpoints under /api/x402/* accept x402 v2 payment headers."
+}

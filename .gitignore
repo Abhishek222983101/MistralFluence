@@ -1,0 +1,16 @@
+node_modules/
+.next/
+.env
+.env.local
+.DS_Store
+*.tsbuildinfo
+.vercel
+.data/
+tmp-agent-test.mjs
+
+# Test videos
+*.mp4
+test-*.mp4
+
+# Secrets / scratch files
+*.mjs

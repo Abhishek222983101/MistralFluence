@@ -1,0 +1,68 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a0a12" />
+      <stop offset="45%" stop-color="#08070c" />
+      <stop offset="100%" stop-color="#0a0f18" />
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(640 360) rotate(90) scale(280 420)">
+      <stop offset="0%" stop-color="#FF4500" stop-opacity="0.45" />
+      <stop offset="50%" stop-color="#00F0FF" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0" />
+      <stop offset="45%" stop-color="#FF4500" stop-opacity="0.08" />
+      <stop offset="55%" stop-color="#00F0FF" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#bg)" />
+  <rect width="1200" height="720" fill="url(#halo)" />
+
+  <g opacity="0.15">
+    <path d="M0 90H1200" stroke="#FF4500" />
+    <path d="M0 180H1200" stroke="#FF4500" />
+    <path d="M0 270H1200" stroke="#FF4500" />
+    <path d="M0 360H1200" stroke="#FF4500" />
+    <path d="M0 450H1200" stroke="#FF4500" />
+    <path d="M0 540H1200" stroke="#FF4500" />
+    <path d="M0 630H1200" stroke="#FF4500" />
+  </g>
+
+  <g opacity="0.2">
+    <path d="M120 0V720" stroke="#00F0FF" />
+    <path d="M300 0V720" stroke="#00F0FF" />
+    <path d="M480 0V720" stroke="#00F0FF" />
+    <path d="M660 0V720" stroke="#00F0FF" />
+    <path d="M840 0V720" stroke="#00F0FF" />
+    <path d="M1020 0V720" stroke="#00F0FF" />
+  </g>
+
+  <g filter="url(#glow)">
+    <path d="M640 190C560 205 515 260 520 330C525 415 585 490 640 520C695 490 755 415 760 330C765 260 720 205 640 190Z" fill="#111118" stroke="#FF4500" stroke-width="2" />
+    <path d="M640 190C560 205 515 260 520 330C525 415 585 490 640 520C695 490 755 415 760 330C765 260 720 205 640 190Z" stroke="#00F0FF" stroke-width="1" opacity="0.4" />
+    <circle cx="640" cy="260" r="72" fill="#0D0A12" stroke="#FF4500" stroke-width="2" />
+  </g>
+
+  <g opacity="0.75">
+    <circle cx="420" cy="210" r="6" fill="#FF4500" />
+    <circle cx="820" cy="220" r="5" fill="#00F0FF" />
+    <circle cx="520" cy="520" r="5" fill="#FF8C00" />
+    <circle cx="760" cy="480" r="6" fill="#FF4500" />
+    <circle cx="680" cy="610" r="4" fill="#00F0FF" />
+  </g>
+
+  <path d="M420 210L520 330L640 260L760 330L820 220" stroke="#FF4500" stroke-opacity="0.4" />
+  <path d="M520 520L640 420L760 480L680 610" stroke="#00F0FF" stroke-opacity="0.35" />
+
+  <rect y="0" width="1200" height="720" fill="url(#scan)" opacity="0.7" />
+</svg>

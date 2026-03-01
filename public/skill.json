@@ -1,0 +1,41 @@
+{
+  "name": "monadfluence",
+  "version": "2.0.0",
+  "description": "Autonomous AI Influencer Pipeline on Monad",
+  "homepage": "https://monadfluence.vercel.app",
+  "entrypoint": "https://monadfluence.vercel.app/skill.md",
+  "skills": [
+    {
+      "name": "monadfluence-character",
+      "url": "https://monadfluence.vercel.app/api/skills/monadfluence-character"
+    },
+    {
+      "name": "monadfluence-content-research",
+      "url": "https://monadfluence.vercel.app/api/skills/monadfluence-content-research"
+    },
+    {
+      "name": "monadfluence-script-writer",
+      "url": "https://monadfluence.vercel.app/api/skills/monadfluence-script-writer"
+    },
+    {
+      "name": "monadfluence-prompt-compiler",
+      "url": "https://monadfluence.vercel.app/api/skills/monadfluence-prompt-compiler"
+    },
+    {
+      "name": "monadfluence-content-publish",
+      "url": "https://monadfluence.vercel.app/api/skills/monadfluence-content-publish"
+    }
+  ],
+  "apis": {
+    "quota": "/api/x402/quota",
+    "x402Info": "/api/x402/info",
+    "character": "/api/state/character",
+    "trends": "/api/swarm/trends",
+    "scripts": "/api/swarm/scripts",
+    "promptCompile": "/api/swarm/prompt-compile",
+    "generateImage": "/api/x402/generate-image",
+    "generateVideo": "/api/x402/generate-video",
+    "captionVideo": "/api/x402/caption-video",
+    "publishReel": "/api/x402/publish-reel"
+  }
+}

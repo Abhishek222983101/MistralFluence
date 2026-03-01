@@ -1,0 +1,23 @@
+Monadfluence MONAD is a bot-first AI influencer backend.
+
+Canonical skill entrypoint:
+- https://monadfluence.vercel.app/skill.md
+
+Skill documents:
+- https://monadfluence.vercel.app/api/skills/monadfluence-character
+- https://monadfluence.vercel.app/api/skills/monadfluence-prompt-compiler
+- https://monadfluence.vercel.app/api/skills/monadfluence-content-publish
+
+Core runtime APIs:
+- GET /api/x402/quota
+- GET /api/x402/info
+- GET/POST /api/state/character
+- POST /api/swarm/trends
+- POST /api/swarm/scripts
+- POST /api/swarm/prompt-compile
+- POST /api/x402/generate-image
+- GET /api/x402/generate-image/:jobId
+- POST /api/x402/generate-video
+- GET /api/x402/generate-video/:jobId
+- POST /api/x402/caption-video
+- POST /api/x402/publish-reel
