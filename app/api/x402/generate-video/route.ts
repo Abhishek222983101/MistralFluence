@@ -10,7 +10,9 @@ import { lintVideoPrompt } from "@/lib/monadfluence/prompt-lint";
 import { getX402Config } from "@/lib/monadfluence/x402-config";
 import { runLog } from "@/lib/monadfluence/run-log";
 import type { CharacterProfile, GenerationRecord } from "@/lib/monadfluence/types";
-import { getVideoAdapter } from "@/lib/videoGen";
+import { getVideoAdapter, generateLtxBuffer, uploadToVps } from "@/lib/videoGen";
+import { generateCharacterVoiceover } from "@/lib/voice/elevenlabs";
+import { compositeAudioVideo } from "@/lib/voice/composite";
 import {
   microUsdcToUsd,
   parsePaymentHeader,
@@ -29,6 +31,8 @@ const generateSchema = z.object({
   duration: z.number().int().min(6).max(10).optional().default(DEFAULT_DURATION),
   imageUrl: z.string().url().optional(),
   characterId: z.string().optional(),
+  /** Script text for ElevenLabs voiceover. When provided, replaces LTX audio with character voice. */
+  scriptText: z.string().max(5000).optional(),
 });
 
 function normalizeDuration(duration: number): number {
@@ -129,19 +133,59 @@ export async function POST(req: Request): Promise<NextResponse> {
       return NextResponse.json({ error: "LTX_API_KEY not configured" }, { status: 500 });
     }
 
-    const adapter = getVideoAdapter(DEFAULT_MODEL);
+    const wantsVoice = Boolean(payload.scriptText?.trim()) && Boolean(process.env.ELEVENLABS_API_KEY);
+    let videoUrl: string;
+    let voiceApplied = false;
 
-    // LTX is synchronous — generateVideo() blocks until the video is ready
-    // and uploads it to the VPS, returning the final video URL.
-    const videoUrl = await adapter.generateVideo(
-      {
+    if (wantsVoice) {
+      // ── Voice-enhanced flow ──────────────────────────────────────
+      // 1. Fire LTX video generation and ElevenLabs TTS in parallel
+      // 2. Composite the voice onto the video with FFmpeg
+      // 3. Upload the composited result to VPS
+      const ltxRequest = {
         prompt: promptForGeneration,
         duration: normalizedDuration,
         aspectRatio: "9:16",
         imageUrl: referenceImageUrl,
-      },
-      apiKey,
-    );
+      };
+
+      const [mp4Buffer, voiceResult] = await Promise.all([
+        generateLtxBuffer(ltxRequest, apiKey),
+        generateCharacterVoiceover(
+          payload.scriptText!,
+          characterProfile?.vibe,
+          characterProfile?.role,
+        ),
+      ]);
+
+      // Composite voice onto video (strips LTX audio, adds ElevenLabs voice)
+      const compositedBuffer = await compositeAudioVideo(mp4Buffer, voiceResult.mp3Buffer);
+
+      // Upload the composited video to VPS
+      videoUrl = await uploadToVps(compositedBuffer);
+      voiceApplied = true;
+
+      runLog("voice.composite.completed", {
+        voiceId: voiceResult.voiceId,
+        scriptLength: payload.scriptText!.length,
+        characterVibe: characterProfile?.vibe ?? "default",
+        characterRole: characterProfile?.role ?? "default",
+      });
+    } else {
+      // ── Original flow (no voice) ────────────────────────────────
+      // LTX generates video with its own audio → uploads to VPS
+      const adapter = getVideoAdapter(DEFAULT_MODEL);
+      videoUrl = await adapter.generateVideo(
+        {
+          prompt: promptForGeneration,
+          duration: normalizedDuration,
+          aspectRatio: "9:16",
+          imageUrl: referenceImageUrl,
+        },
+        apiKey,
+      );
+    }
+
     const jobId = `ltx_${crypto.randomUUID()}`;
 
     const record: GenerationRecord = {
@@ -154,6 +198,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       prompt: promptForGeneration,
       duration: normalizedDuration,
       aspectRatio: "9:16",
+      voice: voiceApplied,
       referenceImageUrl,
       status: "completed",
       retries: 0,
@@ -170,6 +215,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       model: DEFAULT_MODEL,
       duration: normalizedDuration,
       referenceImageUsed: Boolean(referenceImageUrl),
+      voiceApplied,
       paid,
       quotaUsed,
       quotaRemaining: quotaState.tiers["basic"].remaining,
@@ -183,6 +229,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       pollUrl: `/api/x402/generate-video/${jobId}`,
       durationSec: normalizedDuration,
       audioEnabled: true,
+      voiceApplied,
       referenceImageUsed: Boolean(referenceImageUrl),
       paid,
       quotaUsed,

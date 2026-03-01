@@ -1,3 +1,3 @@
 export * from "./types";
 export * from "./registry";
-export { ltxAdapter } from "./ltx";
+export { ltxAdapter, generateLtxBuffer, uploadToVps } from "./ltx";

@@ -254,6 +254,9 @@ export default function FullE2EPage() {
           duration: 10,
           aspectRatio: "9:16",
           characterId: character.id,
+          scriptText: selectedScript
+            ? `${selectedScript.hook}\n${selectedScript.body}\n${selectedScript.cta}`
+            : undefined,
         }),
       });
       const data = await res.json();
