@@ -1,9 +1,7 @@
 /**
  * Serves SKILL.md files for OpenClaw bot consumption.
- * GET /api/skills/monadfluence-character → returns character creation skill
- * GET /api/skills/monadfluence-prompt-compiler → returns prompt compiler skill
- * GET /api/skills/monadfluence-content-publish → returns content generation/publish skill
- * Also supports legacy moltfluence-* aliases for backward compatibility.
+ * GET /api/skills/mistralfluence-agent → returns the unified MistralFluence agent skill
+ * Legacy aliases (monadfluence-*, moltfluence-*) all redirect to the unified skill.
  */
 
 import { NextResponse } from "next/server";
@@ -12,17 +10,19 @@ import { join } from "path";
 
 const SKILLS_DIR = join(process.cwd(), "skills");
 
-const CANONICAL_SKILLS = [
-  "monadfluence-character",
-  "monadfluence-prompt-compiler",
-  "monadfluence-content-publish",
-];
+const CANONICAL_SKILL = "mistralfluence-agent";
 
 const LEGACY_ALIASES: Record<string, string> = {
-  "moltfluence-character": "monadfluence-character",
-  "moltfluence-prompt-compiler": "monadfluence-prompt-compiler",
-  "moltfluence-content-publish": "monadfluence-content-publish",
-  "moltfluence-content": "monadfluence-content-publish",
+  "monadfluence-character": CANONICAL_SKILL,
+  "monadfluence-prompt-compiler": CANONICAL_SKILL,
+  "monadfluence-content-publish": CANONICAL_SKILL,
+  "monadfluence-content": CANONICAL_SKILL,
+  "monadfluence-content-research": CANONICAL_SKILL,
+  "monadfluence-script-writer": CANONICAL_SKILL,
+  "moltfluence-character": CANONICAL_SKILL,
+  "moltfluence-prompt-compiler": CANONICAL_SKILL,
+  "moltfluence-content-publish": CANONICAL_SKILL,
+  "moltfluence-content": CANONICAL_SKILL,
 };
 
 export async function GET(
@@ -31,14 +31,13 @@ export async function GET(
 ) {
   const { name } = await context.params;
   const resolvedName = LEGACY_ALIASES[name] ?? name;
-  const available = [...CANONICAL_SKILLS, ...Object.keys(LEGACY_ALIASES)];
 
-  if (!CANONICAL_SKILLS.includes(resolvedName)) {
+  if (resolvedName !== CANONICAL_SKILL) {
     return NextResponse.json(
       {
         error: `Unknown skill: ${name}`,
-        available,
-        usage: "GET /api/skills/<skill-name>",
+        available: [CANONICAL_SKILL, ...Object.keys(LEGACY_ALIASES)],
+        usage: "GET /api/skills/mistralfluence-agent",
       },
       { status: 404 },
     );

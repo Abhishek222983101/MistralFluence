@@ -1,0 +1,4 @@
+Sample avatar photos in this folder are sourced from RandomUser (https://randomuser.me/) for local demo placeholders.
+
+These files are used only for development/demo visual fidelity in the spatial network section.
+Replace with your production-approved user images and attribution policy before launch.

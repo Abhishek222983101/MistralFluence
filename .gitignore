@@ -14,3 +14,13 @@ test-*.mp4
 
 # Secrets / scratch files
 *.mjs
+
+# ML artifacts
+models/
+wandb/
+unsloth_compiled_cache/
+__pycache__/
+scripts/__pycache__/
+
+# Python venv
+.venv/

@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Monadfluence — Neural Studio 2060",
-  description: "Futuristic AI influencer creation platform interface.",
+  title: "MistralFluence — AI Influencer Engine",
+  description: "Create AI influencers that research, script, and produce viral short-form video. Powered by fine-tuned Mistral-7B + ElevenLabs + LTX.",
 };
 
 export default function RootLayout({

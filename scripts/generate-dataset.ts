@@ -450,7 +450,7 @@ async function main() {
         const assistantResponse = await generateScriptsForTraining(systemPrompt, userPrompt);
 
         if (assistantResponse) {
-          const entry = {
+          const entry: DatasetEntry = {
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: userPrompt },

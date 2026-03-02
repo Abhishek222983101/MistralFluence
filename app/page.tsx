@@ -27,26 +27,26 @@ export default function HomePage() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-[0.4em] text-[rgba(255,255,255,0.6)]">
-              Monadfluence
+              Mistralfluence
             </p>
             <p className="font-display text-sm font-semibold uppercase tracking-[0.3em]">
-              Neural Studio 2060
+              AI Influencer Engine
             </p>
           </div>
         </div>
         <nav className="hidden items-center gap-6 text-xs uppercase tracking-[0.3em] text-[rgba(255,255,255,0.6)] md:flex">
+          <Link href="/full-e2e" className="transition hover:text-white">
+            Pipeline
+          </Link>
           <Link href="/create" className="transition hover:text-white">
             Create
           </Link>
-          <Link href="/reveal" className="transition hover:text-white">
-            Reveal
-          </Link>
-          <Link href="#" className="transition hover:text-white">
-            System
+          <Link href="/studio" className="transition hover:text-white">
+            Studio
           </Link>
         </nav>
-        <Link href="/create" className="holo-btn holo-btn-sm" data-variant="ghost">
-          <span className="holo-btn-text">Enter</span>
+        <Link href="/full-e2e" className="holo-btn holo-btn-sm" data-variant="ghost">
+          <span className="holo-btn-text">Launch Pipeline</span>
         </Link>
       </header>
 
@@ -152,15 +152,15 @@ export default function HomePage() {
               OpenClaw Install
             </p>
             <h2 className="font-display text-2xl uppercase tracking-[0.24em]">
-              Install the Monadfluence Skill
+              Install the MistralFluence Skill
             </h2>
             <p className="text-sm text-[rgba(255,245,240,0.65)]">
-              Use the OpenClaw CLI to provision the Monadfluence skill and wire the
-              neural pipeline directly into your workflow.
+              Use the OpenClaw CLI to provision the MistralFluence skill and wire the
+              AI influencer pipeline directly into your Telegram bot.
             </p>
           </div>
           <div className="w-full max-w-xl rounded-2xl border border-[rgba(255,69,0,0.35)] bg-[rgba(10,10,18,0.85)] p-5 font-mono text-xs text-[rgba(255,245,240,0.8)] shadow-[0_0_25px_rgba(255,69,0,0.2)]">
-            <code>curl -fsSL https://openclaw.ai/install/monadfluence | bash</code>
+            <code>curl -fsSL https://openclaw.ai/install/mistralfluence | bash</code>
           </div>
         </div>
       </section>

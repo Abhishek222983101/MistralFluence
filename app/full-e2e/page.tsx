@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const API_BASE = "https://monadfluencemonad.vercel.app";
+const API_BASE = "";
 
 type CharacterProfile = {
   id: string;
@@ -176,7 +176,7 @@ export default function FullE2EPage() {
   // Generate Scripts
   const generateScripts = async (topic: string) => {
     if (!character) return;
-    setLoading("Generating scripts with Groq LLM...");
+    setLoading("Generating scripts with Mistral AI...");
     setError(null);
     try {
       const res = await fetch(`${API_BASE}/api/swarm/scripts`, {
@@ -379,7 +379,7 @@ export default function FullE2EPage() {
   return (
     <div style={styles.container}>
       <h1 style={{ textAlign: "center", color: "#e04d52", marginBottom: "10px" }}>
-        Moltfluence Pipeline
+        MistralFluence Pipeline
       </h1>
       <p style={{ textAlign: "center", color: "#4ade80", marginBottom: "20px" }}>
         Demo Mode - Free

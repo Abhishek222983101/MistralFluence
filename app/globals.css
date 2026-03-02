@@ -29,6 +29,19 @@
   --color-background: var(--bg-darkest);
   --color-foreground: var(--text-primary);
   --font-sans: var(--font-body);
+
+  /* ── New UI colors (Mistral Orange rebrand) ───────────────── */
+  --color-page: #050509;
+  --color-ink: #fff5f0;
+  --color-mutedInk: #9ca3af;
+  --color-panel: rgba(20, 20, 30, 0.65);
+  --color-brandSky: #FF7000;
+  --color-brandCoral: #FF7000;
+  --color-brandLavender: #FF9500;
+
+  /* ── Shadows for new UI components ────────────────────────── */
+  --shadow-panel-soft: 0 18px 56px rgba(255, 112, 0, 0.12);
+  --shadow-panel-crisp: 0 12px 30px rgba(255, 112, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -650,4 +663,58 @@ footer {
   .holo-frame::before {
     animation: none;
   }
+}
+
+/* ── New UI: Spatial utilities for 3D hero ──────────────────── */
+
+.spatial-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.85) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+  mix-blend-mode: screen;
+}
+
+.spatial-vignette::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, transparent 34%, rgba(0, 0, 0, 0.42) 100%),
+    linear-gradient(180deg, rgba(0, 2, 8, 0.22), rgba(0, 2, 8, 0));
+}
+
+.hero-grid-lines {
+  background-image:
+    linear-gradient(to right, rgba(255, 112, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 112, 0, 0.06) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.hero-fallback-sphere {
+  width: min(74vw, 580px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 112, 0, 0.65), transparent 34%),
+    radial-gradient(circle at 72% 72%, rgba(255, 149, 0, 0.35), transparent 38%),
+    radial-gradient(circle at 50% 50%, rgba(15, 8, 0, 0.85), rgba(5, 5, 9, 1));
+  border: 1px solid rgba(255, 112, 0, 0.25);
+  box-shadow:
+    0 0 100px rgba(255, 112, 0, 0.2),
+    inset 0 0 80px rgba(255, 149, 0, 0.15);
+  animation: fallbackDrift 11s ease-in-out infinite;
+}
+
+.bg-hero-grad {
+  background: linear-gradient(180deg, #050509 0%, #0a0608 60%, #050509 100%);
+}
+
+@keyframes fallbackDrift {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.01); }
 }
