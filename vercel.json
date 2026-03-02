@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/publish-scheduled?secret=${CRON_SECRET}",
-      "schedule": "*/5 * * * *"
-    }
-  ]
-}
