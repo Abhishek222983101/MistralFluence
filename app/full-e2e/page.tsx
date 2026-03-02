@@ -101,6 +101,9 @@ export default function FullE2EPage() {
       
       // 2. Trigger image generation with bypass
       setLoading("Generating character image...");
+      
+      const fallbackPrompt = `A hyper-realistic cinematic portrait of a ${niche} influencer with a ${vibe} aesthetic, vertical 9:16 aspect ratio, high fashion.`;
+      
       const imgRes = await fetch(`${API_BASE}/api/x402/generate-image`, {
         method: "POST",
         headers: { 
@@ -109,7 +112,7 @@ export default function FullE2EPage() {
           "x-api-key": "mistral2026"
         },
         body: JSON.stringify({
-          prompt: profile.imagePrompt,
+          prompt: profile.imagePrompt || fallbackPrompt,
           characterId: profile.id,
           model: "flux-schnell",
         }),

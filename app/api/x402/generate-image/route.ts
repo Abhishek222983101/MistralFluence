@@ -31,10 +31,13 @@ const generateSchema = z.object({
 export async function POST(req: Request): Promise<NextResponse> {
   try {
     // ── Credit Protection Gate ─────────────────────────────────────
+    let paymentBypassed = false;
     const allowedKeys = (process.env.ALLOWED_API_KEYS ?? "").split(",").filter(Boolean);
     if (allowedKeys.length > 0) {
       const clientKey = req.headers.get("x-api-key") ?? "";
-      if (!allowedKeys.includes(clientKey)) {
+      if (allowedKeys.includes(clientKey)) {
+        paymentBypassed = true;
+      } else {
         return NextResponse.json(
           { error: "Unauthorized — valid x-api-key header required" },
           { status: 401 },
@@ -46,7 +49,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     const payload = generateSchema.parse(body);
 
     const treasury = getTreasuryWallet();
-    if (!treasury) {
+    if (!treasury && !paymentBypassed) {
       return NextResponse.json({ error: "Treasury wallet not configured" }, { status: 500 });
     }
 
@@ -65,41 +68,43 @@ export async function POST(req: Request): Promise<NextResponse> {
     const url = new URL(req.url);
     const resource = `${url.origin}${url.pathname}`;
 
-    if (!payment) {
-      return x402PaymentRequired({
-        priceUsd: costUsd,
-        recipient: treasury,
+    if (!paymentBypassed) {
+      if (!payment) {
+        return x402PaymentRequired({
+          priceUsd: costUsd,
+          recipient: treasury,
+          description: `AI image generation: ${payload.model}`,
+          resourceUrl: resource,
+        });
+      }
+
+      const verification = await verifyPaymentHeader({
+        payment,
+        expectedRecipient: treasury,
+        resource,
+        maxAmountRequired: String(costMicroUsdc),
         description: `AI image generation: ${payload.model}`,
-        resourceUrl: resource,
+      });
+
+      if (!verification.valid) {
+        return NextResponse.json(
+          {
+            error: "Payment verification failed",
+            detail: verification.reason ?? "unknown",
+            requiredUsd: costUsd,
+          },
+          { status: 402 },
+        );
+      }
+
+      paymentAuditLog({
+        action: "generate-image",
+        payment,
+        verification,
+        userKey,
+        resource,
       });
     }
-
-    const verification = await verifyPaymentHeader({
-      payment,
-      expectedRecipient: treasury,
-      resource,
-      maxAmountRequired: String(costMicroUsdc),
-      description: `AI image generation: ${payload.model}`,
-    });
-
-    if (!verification.valid) {
-      return NextResponse.json(
-        {
-          error: "Payment verification failed",
-          detail: verification.reason ?? "unknown",
-          requiredUsd: costUsd,
-        },
-        { status: 402 },
-      );
-    }
-
-    paymentAuditLog({
-      action: "generate-image",
-      payment,
-      verification,
-      userKey,
-      resource,
-    });
 
     let jobId: string;
 

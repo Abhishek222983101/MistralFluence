@@ -89,55 +89,64 @@ export async function POST(req: Request): Promise<NextResponse> {
     let quotaUsed = 0;
     let paymentMeta: GenerationRecord["payment"] | undefined;
 
-    if (!payment) {
-      const consumed = await consumeFreeQuota(userKey, "basic", DEFAULT_MODEL);
-      quotaState = consumed.quota;
+    // ── Payment bypass via API key ───────────────────────────────
+    let paymentBypassed = false;
+    const bypassHeader = req.headers.get("x-bypass-payment");
+    if (bypassHeader === "true" && allowedKeys.includes(req.headers.get("x-api-key") ?? "")) {
+      paymentBypassed = true;
+    }
 
-      if (!consumed.usedFree) {
-        return x402PaymentRequired({
-          priceUsd,
-          recipient: treasury,
+    if (!paymentBypassed) {
+      if (!payment) {
+        const consumed = await consumeFreeQuota(userKey, "basic", DEFAULT_MODEL);
+        quotaState = consumed.quota;
+
+        if (!consumed.usedFree) {
+          return x402PaymentRequired({
+            priceUsd,
+            recipient: treasury,
+            description,
+            resourceUrl: resource,
+          });
+        }
+
+        quotaUsed = 1;
+      } else {
+        const verification = await verifyPaymentHeader({
+          payment,
+          expectedRecipient: treasury,
+          resource,
+          maxAmountRequired: String(costAtomic),
           description,
-          resourceUrl: resource,
+        });
+
+        if (!verification.valid) {
+          return NextResponse.json(
+            {
+              error: "Payment verification failed",
+              detail: verification.reason ?? "unknown",
+              requiredUsd: priceUsd,
+            },
+            { status: 402 },
+          );
+        }
+
+        paid = true;
+        paymentMeta = {
+          txSignature: payment.txSignature,
+          payer: verification.payer ?? payment.payer,
+          network: verification.network ?? payment.network,
+          asset: verification.asset ?? payment.asset,
+        };
+
+        paymentAuditLog({
+          action: "generate-video",
+          payment,
+          verification,
+          userKey,
+          resource,
         });
       }
-
-      quotaUsed = 1;
-    } else {
-      const verification = await verifyPaymentHeader({
-        payment,
-        expectedRecipient: treasury,
-        resource,
-        maxAmountRequired: String(costAtomic),
-        description,
-      });
-
-      if (!verification.valid) {
-        return NextResponse.json(
-          {
-            error: "Payment verification failed",
-            detail: verification.reason ?? "unknown",
-            requiredUsd: priceUsd,
-          },
-          { status: 402 },
-        );
-      }
-
-      paid = true;
-      paymentMeta = {
-        txSignature: payment.txSignature,
-        payer: verification.payer ?? payment.payer,
-        network: verification.network ?? payment.network,
-        asset: verification.asset ?? payment.asset,
-      };
-
-      paymentAuditLog({
-        action: "generate-video",
-        payment,
-        verification,
-        userKey,
-        resource,
-      });
     }
 
     const isDryRun = process.env.DRY_RUN_APIS === "true";
