@@ -14,7 +14,7 @@ export async function GET(req: Request, context: { params: Promise<{ jobId: stri
     const params = await context.params;
     const jobId = params.jobId;
 
-    const apiKey = process.env.HAILUO_API_KEY;
+    const apiKey = process.env.PIAPI_KEY || process.env.HAILUO_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API key not configured" },
