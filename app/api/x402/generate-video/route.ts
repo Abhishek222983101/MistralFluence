@@ -41,6 +41,18 @@ function normalizeDuration(duration: number): number {
 
 export async function POST(req: Request): Promise<NextResponse> {
   try {
+    // ── Credit Protection Gate ─────────────────────────────────────
+    const allowedKeys = (process.env.ALLOWED_API_KEYS ?? "").split(",").filter(Boolean);
+    if (allowedKeys.length > 0) {
+      const clientKey = req.headers.get("x-api-key") ?? "";
+      if (!allowedKeys.includes(clientKey)) {
+        return NextResponse.json(
+          { error: "Unauthorized — valid x-api-key header required" },
+          { status: 401 },
+        );
+      }
+    }
+
     const body = await req.json();
     const payload = generateSchema.parse(body);
     const normalizedDuration = normalizeDuration(payload.duration);
@@ -128,8 +140,10 @@ export async function POST(req: Request): Promise<NextResponse> {
       });
     }
 
+    const isDryRun = process.env.DRY_RUN_APIS === "true";
+
     const apiKey = process.env.LTX_API_KEY;
-    if (!apiKey) {
+    if (!apiKey && !isDryRun) {
       return NextResponse.json({ error: "LTX_API_KEY not configured" }, { status: 500 });
     }
 
@@ -137,7 +151,19 @@ export async function POST(req: Request): Promise<NextResponse> {
     let videoUrl: string;
     let voiceApplied = false;
 
-    if (wantsVoice) {
+    if (isDryRun) {
+      // ── Dry-run mode: skip ALL paid API calls ─────────────────────
+      // Simulates a 3-second generation delay, returns a placeholder URL.
+      // LTX, ElevenLabs, and FFmpeg are completely bypassed.
+      await new Promise((r) => setTimeout(r, 3000));
+      videoUrl = "https://placehold.co/1080x1920.mp4?text=DRY+RUN+VIDEO";
+      voiceApplied = wantsVoice; // Report as if voice was applied
+      runLog("video.dry_run", {
+        prompt: promptForGeneration.slice(0, 100),
+        wantsVoice,
+        duration: normalizedDuration,
+      });
+    } else if (wantsVoice) {
       // ── Voice-enhanced flow ──────────────────────────────────────
       // 1. Fire LTX video generation and ElevenLabs TTS in parallel
       // 2. Composite the voice onto the video with FFmpeg
@@ -150,7 +176,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       };
 
       const [mp4Buffer, voiceResult] = await Promise.all([
-        generateLtxBuffer(ltxRequest, apiKey),
+        generateLtxBuffer(ltxRequest, apiKey!),
         generateCharacterVoiceover(
           payload.scriptText!,
           characterProfile?.vibe,
@@ -182,7 +208,7 @@ export async function POST(req: Request): Promise<NextResponse> {
           aspectRatio: "9:16",
           imageUrl: referenceImageUrl,
         },
-        apiKey,
+        apiKey!,
       );
     }
 

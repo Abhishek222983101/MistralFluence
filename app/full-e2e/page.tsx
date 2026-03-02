@@ -105,7 +105,8 @@ export default function FullE2EPage() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "x-bypass-payment": "true"
+          "x-bypass-payment": "true",
+          "x-api-key": "mistral2026"
         },
         body: JSON.stringify({
           prompt: profile.imagePrompt,
@@ -245,7 +246,8 @@ export default function FullE2EPage() {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "x-bypass-payment": "true"
+          "x-bypass-payment": "true",
+          "x-api-key": "mistral2026"
         },
         body: JSON.stringify({
           prompt: compiledPrompt,

@@ -30,6 +30,18 @@ const generateSchema = z.object({
 
 export async function POST(req: Request): Promise<NextResponse> {
   try {
+    // ── Credit Protection Gate ─────────────────────────────────────
+    const allowedKeys = (process.env.ALLOWED_API_KEYS ?? "").split(",").filter(Boolean);
+    if (allowedKeys.length > 0) {
+      const clientKey = req.headers.get("x-api-key") ?? "";
+      if (!allowedKeys.includes(clientKey)) {
+        return NextResponse.json(
+          { error: "Unauthorized — valid x-api-key header required" },
+          { status: 401 },
+        );
+      }
+    }
+
     const body = await req.json();
     const payload = generateSchema.parse(body);
 
@@ -38,8 +50,10 @@ export async function POST(req: Request): Promise<NextResponse> {
       return NextResponse.json({ error: "Treasury wallet not configured" }, { status: 500 });
     }
 
+    const isDryRun = process.env.DRY_RUN_APIS === "true";
+
     const apiKey = process.env.PIAPI_KEY || process.env.HAILUO_API_KEY;
-    if (!apiKey) {
+    if (!apiKey && !isDryRun) {
       return NextResponse.json({ error: "Image generation API key not configured" }, { status: 500 });
     }
 
@@ -87,30 +101,45 @@ export async function POST(req: Request): Promise<NextResponse> {
       resource,
     });
 
-    const adapter = getImageAdapter(payload.model);
-    const jobId = await adapter.generateImage(
-      {
-        prompt: payload.prompt,
-        aspectRatio: payload.aspectRatio,
-        style: payload.style,
-      },
-      apiKey,
-    );
+    let jobId: string;
+
+    if (isDryRun) {
+      // ── Dry-run mode: skip real PiAPI/image gen call ──────────────
+      await new Promise((r) => setTimeout(r, 1500));
+      jobId = `dry_${crypto.randomUUID()}`;
+      runLog("image.dry_run", {
+        model: payload.model,
+        prompt: payload.prompt.slice(0, 100),
+        characterId: payload.characterId,
+      });
+    } else {
+      const adapter = getImageAdapter(payload.model);
+      jobId = await adapter.generateImage(
+        {
+          prompt: payload.prompt,
+          aspectRatio: payload.aspectRatio,
+          style: payload.style,
+        },
+        apiKey!,
+      );
+    }
 
     runLog("image.job.submitted", {
       jobId,
       model: payload.model,
       characterId: payload.characterId,
       userKey,
+      dryRun: isDryRun,
     });
 
     return NextResponse.json({
       jobId,
       model: payload.model,
-      status: "pending",
+      status: isDryRun ? "completed" : "pending",
       pollUrl: `/api/x402/generate-image/${jobId}`,
       paid: true,
       characterId: payload.characterId,
+      ...(isDryRun ? { imageUrl: "https://placehold.co/1080x1080.png?text=DRY+RUN+IMAGE" } : {}),
     });
   } catch (error) {
     return NextResponse.json({ error: (error as Error).message }, { status: 400 });
