@@ -1,40 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { motion, Variants } from "framer-motion";
-import NeuralBackground from "@/components/NeuralBackground";
-import ParticleOrbit from "@/components/ParticleOrbit";
-import StatWidget from "@/components/StatWidget";
+import dynamic from "next/dynamic";
 
-const headlineVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
-  }),
-};
+const LandingHero3D = dynamic(
+  () => import("@/components/hero/LandingHero3D").then((m) => ({ default: m.LandingHero3D })),
+  { ssr: false }
+);
+
+const PIPELINE_STEPS = [
+  {
+    num: "01",
+    title: "Character Setup",
+    desc: "60-second interview creates an AI persona with generated portrait via Flux-dev.",
+  },
+  {
+    num: "02",
+    title: "Trend Research",
+    desc: "Reddit, HackerNews, CoinGecko, Tavily aggregated and synthesized by Mistral.",
+  },
+  {
+    num: "03",
+    title: "Script Generation",
+    desc: "Fine-tuned Mistral-7B LoRA writes 3 script variants matched to your character.",
+  },
+  {
+    num: "04",
+    title: "Prompt Compile",
+    desc: "Character + script + brief compiled into a linted, model-ready video prompt.",
+  },
+  {
+    num: "05",
+    title: "Voice + Video",
+    desc: "ElevenLabs TTS narration + LTX-2 video generation + FFmpeg composite in one call.",
+  },
+];
 
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden px-6 pb-24 pt-10 md:px-16">
-      <NeuralBackground className="absolute inset-0" />
-
-      <header className="relative z-10 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="relative h-10 w-10 rounded-full border border-[rgba(255,69,0,0.6)] bg-[rgba(255,69,0,0.15)] shadow-[0_0_20px_rgba(255,69,0,0.6)]">
-            <div className="portal-ring" />
-          </div>
+    <main className="relative min-h-screen">
+      {/* ── Floating Nav ── */}
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 md:px-10">
+        <div className="pointer-events-auto flex items-center gap-3">
+          <div className="relative h-9 w-9 rounded-full border border-[rgba(255,112,0,0.6)] bg-[rgba(255,112,0,0.15)] shadow-[0_0_18px_rgba(255,112,0,0.5)]" />
           <div>
-            <p className="text-xs uppercase tracking-[0.4em] text-[rgba(255,255,255,0.6)]">
-              Mistralfluence
+            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/50">
+              MistralFluence
             </p>
-            <p className="font-display text-sm font-semibold uppercase tracking-[0.3em]">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/90">
               AI Influencer Engine
             </p>
           </div>
         </div>
-        <nav className="hidden items-center gap-6 text-xs uppercase tracking-[0.3em] text-[rgba(255,255,255,0.6)] md:flex">
+        <nav className="pointer-events-auto hidden items-center gap-6 text-[11px] uppercase tracking-[0.25em] text-white/50 md:flex">
           <Link href="/full-e2e" className="transition hover:text-white">
             Pipeline
           </Link>
@@ -45,122 +63,115 @@ export default function HomePage() {
             Studio
           </Link>
         </nav>
-        <Link href="/full-e2e" className="holo-btn holo-btn-sm" data-variant="ghost">
-          <span className="holo-btn-text">Launch Pipeline</span>
+        <Link
+          href="/full-e2e"
+          className="pointer-events-auto rounded-full border border-white/20 bg-white/5 px-5 py-2 text-xs font-semibold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/10"
+        >
+          Launch Pipeline
         </Link>
       </header>
 
-      <section className="relative z-10 mt-20 grid gap-16 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="space-y-10">
-          <div className="relative">
-            <div className="absolute -left-8 top-6 h-28 w-28 rounded-full border border-[rgba(255,69,0,0.4)] opacity-50" />
-            <motion.h1
-              className="font-display text-4xl font-semibold uppercase tracking-[0.28em] text-white sm:text-5xl lg:text-6xl"
-              initial="hidden"
-              animate="visible"
-              variants={headlineVariants}
-              custom={0}
-            >
-              Your AI Agent
-            </motion.h1>
-            <motion.h1
-              className="font-display text-4xl font-semibold uppercase tracking-[0.28em] text-[rgba(255,99,71,0.95)] sm:text-5xl lg:text-6xl"
-              initial="hidden"
-              animate="visible"
-              variants={headlineVariants}
-              custom={1}
-            >
-              Becomes an Influencer
-            </motion.h1>
-          </div>
+      {/* ── 3D Hero with Avatar Sphere ── */}
+      <LandingHero3D
+        headline="Your AI Agent Becomes an Influencer"
+        subtext="Fine-tuned Mistral-7B generates character-aware scripts. ElevenLabs narrates. LTX renders video. FFmpeg composites. One pipeline, zero manual work."
+        primaryCta={{ label: "Launch Pipeline", href: "/full-e2e" }}
+        secondaryCta={{ label: "Create Character", href: "/create" }}
+      />
 
-          <motion.p
-            className="max-w-xl text-base text-[rgba(255,245,240,0.7)]"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-          >
-            Step into a 2060-grade neural interface where your AI persona is authored,
-            amplified, and deployed across the social grid in minutes.
-          </motion.p>
-
-          <div className="relative inline-flex items-center">
-            <ParticleOrbit className="-inset-16" />
-            <Link
-              href="/create"
-              className="holo-btn holo-btn-lg"
-              data-variant="primary"
-            >
-              <span className="holo-btn-text">Create Your AI Influencer</span>
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {[
-              "Auto-Generated",
-              "Multi-Platform",
-              "Viral Optimized",
-              "Neural Safe",
-            ].map((item) => (
-              <span
-                key={item}
-                className="rounded-full border border-[rgba(255,69,0,0.4)] bg-[rgba(255,69,0,0.08)] px-4 py-2 text-xs uppercase tracking-[0.3em] text-[rgba(255,245,240,0.7)]"
+      {/* ── Pipeline Steps ── */}
+      <section
+        id="pipeline"
+        className="relative bg-[#050509] px-6 py-20 md:px-10 md:py-28"
+      >
+        <div className="mx-auto max-w-6xl">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-brandCoral">
+            End-to-End Pipeline
+          </p>
+          <h2 className="mt-3 text-center text-3xl font-semibold text-white md:text-4xl">
+            From persona to published video in minutes
+          </h2>
+          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+            {PIPELINE_STEPS.map((step) => (
+              <div
+                key={step.num}
+                className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 transition hover:border-brandCoral/30 hover:bg-white/[0.05]"
               >
-                {item}
-              </span>
+                <p className="text-2xl font-bold text-brandCoral/60 transition group-hover:text-brandCoral">
+                  {step.num}
+                </p>
+                <h3 className="mt-3 text-sm font-semibold uppercase tracking-[0.15em] text-white">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-white/50">
+                  {step.desc}
+                </p>
+              </div>
             ))}
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <StatWidget
-            label="Influencers Created"
-            value="4,729"
-            caption="Live neural count"
-          />
-          <div className="rounded-2xl border border-[rgba(255,69,0,0.25)] bg-[rgba(8,8,15,0.7)] p-6 shadow-[0_0_40px_rgba(255,69,0,0.3)]">
-            <p className="text-xs uppercase tracking-[0.34em] text-[rgba(255,255,255,0.5)]">
-              Neural Diagnostics
-            </p>
-            <p className="mt-3 text-lg uppercase tracking-[0.2em] text-white">
-              Signal Integrity: 98.4%
-            </p>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-[rgba(255,255,255,0.1)]">
-              <div className="h-full w-[82%] rounded-full bg-[linear-gradient(90deg,#ff4500,#00f0ff)] shadow-[0_0_20px_rgba(255,69,0,0.8)]" />
-            </div>
-            <p className="mt-4 text-sm text-[rgba(255,245,240,0.6)]">
-              Core cluster online. Adaptive persona engine calibrated.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-[rgba(255,69,0,0.2)] bg-[rgba(12,12,22,0.7)] p-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-[rgba(255,255,255,0.5)]">
-              Active Protocols
-            </p>
-            <ul className="mt-4 space-y-3 text-sm text-[rgba(255,245,240,0.7)]">
-              <li>Holographic persona synthesis</li>
-              <li>Realtime trend ingestion</li>
-              <li>Sentiment-aware amplification</li>
-            </ul>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 mt-16 rounded-3xl border border-[rgba(255,69,0,0.25)] bg-[rgba(8,8,14,0.75)] p-8 shadow-[0_0_40px_rgba(255,69,0,0.25)]">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-xl space-y-3">
-            <p className="text-xs uppercase tracking-[0.34em] text-[rgba(255,255,255,0.55)]">
-              OpenClaw Install
-            </p>
-            <h2 className="font-display text-2xl uppercase tracking-[0.24em]">
-              Install the MistralFluence Skill
-            </h2>
-            <p className="text-sm text-[rgba(255,245,240,0.65)]">
-              Use the OpenClaw CLI to provision the MistralFluence skill and wire the
-              AI influencer pipeline directly into your Telegram bot.
-            </p>
+      {/* ── Tech Stack Bar ── */}
+      <section className="border-y border-white/[0.06] bg-[#070710] px-6 py-10 md:px-10">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-10 gap-y-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/35">
+          {[
+            "Mistral-7B LoRA",
+            "Mistral Cloud",
+            "ElevenLabs",
+            "LTX-2",
+            "PiAPI Flux",
+            "FFmpeg",
+            "Next.js 14",
+            "Three.js",
+          ].map((t) => (
+            <span key={t} className="transition hover:text-white/60">
+              {t}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ── OpenClaw Install + Hackathon ── */}
+      <section className="bg-[#050509] px-6 py-20 md:px-10">
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-8 md:p-10">
+            <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-md space-y-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brandCoral">
+                  Agent Integration
+                </p>
+                <h2 className="text-2xl font-semibold text-white">
+                  Install the MistralFluence Skill
+                </h2>
+                <p className="text-sm leading-relaxed text-white/50">
+                  Wire the full AI influencer pipeline into your Telegram bot or
+                  any OpenClaw-compatible agent in one command.
+                </p>
+              </div>
+              <div className="w-full max-w-md rounded-xl border border-brandCoral/20 bg-[rgba(255,112,0,0.04)] p-5 font-mono text-xs text-white/80">
+                <code>curl -fsSL https://openclaw.ai/install/mistralfluence | bash</code>
+              </div>
+            </div>
           </div>
-          <div className="w-full max-w-xl rounded-2xl border border-[rgba(255,69,0,0.35)] bg-[rgba(10,10,18,0.85)] p-5 font-mono text-xs text-[rgba(255,245,240,0.8)] shadow-[0_0_25px_rgba(255,69,0,0.2)]">
-            <code>curl -fsSL https://openclaw.ai/install/mistralfluence | bash</code>
+
+          {/* Hackathon badge */}
+          <div className="mt-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/25">
+              Built for the Mistral Worldwide Hackathon 2026
+            </p>
+            <div className="mt-3 inline-flex flex-wrap justify-center gap-3">
+              {["Fine-tuning Track", "ElevenLabs Challenge", "Mistral Vibe"].map(
+                (badge) => (
+                  <span
+                    key={badge}
+                    className="rounded-full border border-brandCoral/20 bg-brandCoral/5 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-brandCoral/70"
+                  >
+                    {badge}
+                  </span>
+                )
+              )}
+            </div>
           </div>
         </div>
       </section>
